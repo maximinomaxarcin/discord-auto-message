@@ -44,31 +44,22 @@ print ("╚██████╔╝╚██████╔╝██████
 print ("░╚═════╝░░╚═════╝░╚═════╝░╚═╝░░░░░╚═╝░░╚═╝╚═╝╚═╝░░╚══╝░╚═════╝░")
 
 time.sleep(1)
-
 # Input manual
 token = input("Masukkan Token Bot Discord: ").strip()
 channel_ids_input = input("Masukkan ID Saluran Discord (pisahkan dengan koma): ").strip()
+pesan_input = input("Masukkan pesan yang ingin Anda kirim: ").strip()
 waktu_kirim = 86400  # 24 jam dalam detik
-
 # Mengubah ID saluran menjadi integer
 channel_ids = [int(cid.strip()) for cid in channel_ids_input.split(",")]
-
-# Membaca pesan dari file
-with open("pesan.txt", "r") as f:
-    words = f.readlines()
-
 os.system('cls' if os.name == 'nt' else 'clear')
-
 while True:
     for channel_id in channel_ids:
         payload = {
-            'content': random.choice(words).strip()
+            'content': pesan_input  # Menggunakan pesan dari input manual
         }
-
         headers = {
             'Authorization': token
         }
-
         # Mengirim pesan
         r = requests.post(f"https://discord.com/api/v9/channels/{channel_id}/messages", data=payload, headers=headers)
         if r.status_code == 200:
@@ -76,6 +67,5 @@ while True:
             print(Fore.YELLOW + payload['content'])
         else:
             print(Fore.RED + f'Gagal mengirim pesan ke channel ID {channel_id}: {r.status_code}')
-
     print(f"Menunggu selama {waktu_kirim} detik sebelum mengirim pesan lagi...")
     time.sleep(waktu_kirim)  # Tunggu selama 24 jam
