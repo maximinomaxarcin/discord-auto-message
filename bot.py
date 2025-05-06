@@ -1,47 +1,81 @@
-import discord
-import asyncio
+import requests
+import random
+import time
+import os
+from colorama import Fore
 
-class AutoMessageBot(discord.Client):
-    def __init__(self, message, channel_ids, loop_interval=86400, **kwargs):
-        super().__init__(**kwargs)
-        self.message = message
-        self.channel_ids = channel_ids
-        self.loop_interval = loop_interval  # default 24 hours in seconds
+print ("⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠉⠛⢿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿")
+print ("⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠄⢂⣠⣰⣶⣾⣾⣿⣷⣷⣾⣿⣼⣷⣾⣴⣶⣤⣠⡀⠀⠀⠀⠀⠀⠈⠻⢿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿")
+print ("⠀⠀⠀⠀⠀⠀⠀⠀⠀⣀⣶⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣧⣀⠀⠀⠀⠀⠀⠈⠙⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿")
+print ("⠀⠀⠀⠀⠀⠀⡀⢁⣾⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣟⡣⢝⡀⠀⠀⠀⠀⠀⠈⢻⣿⣿⣿⣿⣿⣿⣿⣿⣿")
+print ("⠀⠀⠀⠀⠀⠀⣠⣿⣿⣷⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣾⡕⣃⠄⠀⠀⠀⠀⠀⠀⠀⠹⣿⣿⣿⣿⣿⣿⣿⣿")
+print ("⠀⠀⠀⠀⠀⠰⣽⢿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⡽⢆⠁⠀⠀⠀⠀⠀⠀⠀⠀⢹⣿⣿⣿⣿⣿⣿⣿")
+print ("⠀⠀⠀⠀⡀⢳⢫⣿⣾⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣛⠀⠠⠀⠠⠈⠀⠀⠀⠀⠀⠸⣿⣿⣿⣿⣿⣿⣿")
+print ("⠀⠀⠀⠀⠀⣎⡳⢯⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⡿⠛⠛⠛⠋⠛⠛⠛⠻⠛⢥⠃⠠⠀⠀⠀⠀⠀⠀⠀⠀⠀⣿⣿⣿⣿⣿⣿⣿")
+print ("⠀⠀⠀⠀⠀⠎⠙⠋⠙⠛⠛⠛⠛⣿⣿⣿⣿⣿⣿⡗⢉⢠⡤⠖⣰⣤⣶⣦⣤⣄⡀⢢⡁⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⢻⣿⣿⣿⣿⣿⣿")
+print ("⠀⠀⠀⠠⠀⠀⣀⣤⣤⡴⠴⠔⡤⠿⣿⣿⣿⣿⣿⡏⠠⢚⣤⣿⣿⣶⣤⣤⣏⠣⠉⢄⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⢺⣿⣿⣿⡿⣻⣿")
+print ("⠀⠀⠀⠀⠀⡰⢊⡭⠛⠛⠿⠶⡈⠷⠾⢻⠿⠛⡛⡋⢠⡾⠋⠈⠀⠐⠲⠀⠀⠀⠀⠈⠂⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⢸⠿⠿⢯⡷⢏⣿")
+print ("⠀⠀⠈⠀⠀⠐⠁⠀⠘⠃⠁⠀⠀⢐⣁⣵⣿⣟⠀⡆⠽⡇⠀⠠⣦⡈⠀⠀⡀⠀⠀⣄⣤⣴⡀⠀⠀⠀⠀⠀⠀⠀⢀⠐⠀⠀⠀⠹⣿⣻")
+print ("⠀⠀⠠⠀⠀⠀⠀⠠⠦⠀⣀⡤⣴⡆⢼⣿⣿⣿⠁⠡⢥⣨⣿⣳⣢⣔⣤⣩⣤⣦⣰⣬⣿⣿⣷⡄⠀⠀⠀⠀⠀⠀⠀⠀⢠⡀⠀⢈⢷⣻")
+print ("⠀⠀⠀⠀⢠⣇⢫⣺⣖⣖⣯⣾⣿⠃⢸⣿⣿⣿⣦⠐⡈⢄⢵⣿⣿⣿⣿⣿⣷⣟⣿⣿⣿⣿⡏⡨⠁⠀⠀⠀⠀⠀⠀⢠⣿⠂⠀⢰⢧⣻")
+print ("⠀⠀⠀⠀⢘⣿⣦⣾⣿⣿⣿⣝⠯⡄⣹⣿⣿⣿⣷⡛⠲⣤⣱⣻⠿⢿⣿⣿⣿⣿⣿⣿⣿⡧⠐⠀⠄⠀⠀⠀⠀⠀⠀⠀⣻⡅⠀⣞⢣⡷")
+print ("⠀⠀⠀⠀⢸⣿⣿⣿⡿⠿⢏⣱⡆⡸⣿⣿⣿⣿⣿⣷⣆⡸⣿⣿⣿⣶⣿⣿⣿⣿⣿⣿⣿⡱⠀⡀⠀⠀⠀⠀⠀⠀⠀⢰⣹⡇⠀⣏⢇⣿")
+print ("⠀⠀⠀⠀⠈⢻⡱⢷⣴⣾⣿⣿⢻⠄⠙⠿⠟⠁⠀⠙⠛⠃⠸⣿⣿⣿⣿⣿⣿⣿⣿⣿⣷⠉⡄⠀⠀⠀⠀⠀⠀⠀⠀⠘⠁⠁⢠⡟⢬⢻")
+print ("⠀⠀⠀⠀⠀⠠⡑⢿⣿⣿⣿⣿⣆⠀⢀⡀⠀⠀⣀⣤⣀⣠⣴⣿⣿⣿⣿⣿⣿⢿⣻⣷⣦⣜⢂⠐⠀⠀⠀⠀⠀⠀⠐⠀⠀⠀⠶⡸⢌⣳")
+print ("⠀⠀⠀⠀⠀⠀⡘⢼⣿⣿⣿⣿⣷⣷⡏⣷⣤⣾⣿⡿⣿⣿⣿⣿⣿⣿⣿⣿⣿⡚⠽⣿⣿⠏⠞⠠⠀⠀⠀⠀⠀⠀⠀⠀⠀⢊⠰⣁⠲⣸")
+print ("⠀⠀⠀⠀⠀⠀⢨⣙⣾⢿⣿⣿⣿⣿⣿⣿⣷⡽⠿⠿⣿⣿⣿⣿⣿⡯⡛⢿⣟⠈⡜⡙⢧⠉⠈⠀⠀⠀⠀⠀⠀⠀⢠⠐⠌⠂⠥⣀⠳⡜")
+print ("⠀⠀⠀⠀⠀⠀⠐⡍⠃⡿⣹⣿⣿⡿⠋⠀⠠⠠⠐⠖⠀⠈⠙⠛⠛⠽⡏⠈⣿⡃⠐⡘⢪⠁⠀⠀⠀⠂⠀⠀⠀⠀⠢⠱⢌⠱⡒⢄⠳⣸")
+print ("⠀⠀⠀⠀⠀⠀⠈⣷⡐⡏⣟⡿⠋⠁⠀⣀⣠⡄⣀⣤⣤⡤⠀⣀⣠⣤⣼⡆⣸⡧⡀⠀⢺⠂⠀⠀⠀⠀⠀⠀⠀⠠⢁⠣⢌⠢⠑⡌⢒⡡")
+print ("⠀⠀⠀⠀⠀⠀⠀⢹⣇⣷⣼⣶⣶⣦⣂⡹⠟⠟⠛⠛⠑⠴⣭⢏⣭⢟⣿⣿⣶⡇⠀⠀⢢⠀⠀⠀⠀⠀⠀⠀⠀⢡⠈⠒⡄⢊⠡⠐⢢⠰")
+print ("⠀⠀⠀⠀⠀⠀⠀⠈⣽⣿⣿⣿⣿⣿⣿⣿⣶⣤⣤⣴⣾⢿⣼⣦⢯⣳⡿⢿⠽⠀⠀⠀⠁⠀⠀⠀⠀⠀⠀⠀⠐⢀⠊⡐⢀⠢⠌⠡⢀⢣")
+print ("⠀⠀⠀⠀⠀⠀⠀⠀⠘⢏⢻⣿⣷⣾⣽⣻⣭⣦⣶⣾⣿⣿⣾⣿⣾⣿⡛⠅⠂⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⢀⠃⡀⠀⠂⡀⠂⡁⠀⢂")
+print ("⠀⠀⠀⠀⠀⠀⠀⠀⠀⠈⢂⠸⠿⣿⡿⣿⣿⣿⣿⣿⣿⣿⣿⣿⡿⠡⠑⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⢀⠊⠀⠁⠐⠀⠐⠀⠄⠂")
+print ("⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠓⢀⠩⢐⠹⠛⠻⠟⠻⠋⠙⠁⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⢀⠆⠐⡀⠈⢀⠈⢀⠂⠄⠐")
+print ("⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⢀⡀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⢀⣮⣿⠠⢐⠈⠄⡐⠠⢀⠈⠀")
+print ("⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⢰⣿⣦⣄⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⢠⣴⣿⣿⣿⣧⣈⠜⡐⢄⠂⠄⢂⠈")
+print ("⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⢀⣤⣾⣿⣿⣿⣶⡄⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⣠⣾⣿⣿⣿⣿⣿⣿⣿⣿⣶⣬⣜⣰⣄⢪")
+print ("⠀⠀⠀⠀⠀⠀⠀⣀⣤⣶⣿⣷⣿⣿⣿⣿⣿⣿⣧⣄⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⣠⢲⣻⣿⣿⣿⣿⣿⣿⣿⡿⣿⣿⣿⣿⣿⣿⣿")
 
-    async def on_ready(self):
-        print(f'Logged in as {self.user} (ID: {self.user.id})')
-        print('------')
-        while True:
-            for channel_id in self.channel_ids:
-                channel = self.get_channel(channel_id)
-                if channel is None:
-                    print(f"Warning: Cannot find channel with ID {channel_id}. Skipping.")
-                    continue
-                try:
-                    await channel.send(self.message)
-                    print(f"Sent message to channel ID {channel_id}")
-                except Exception as e:
-                    print(f"Failed to send message to channel ID {channel_id}: {e}")
-            print(f"Waiting for {self.loop_interval} seconds before next round...")
-            await asyncio.sleep(self.loop_interval)
+print ("░██████╗░██╗░░░██╗░██████╗██████╗░██████╗░██╗███╗░░██╗░██████╗░")
+print ("██╔════╝░██║░░░██║██╔════╝██╔══██╗██╔══██╗██║████╗░██║██╔════╝░")
+print ("██║░░██╗░██║░░░██║╚█████╗░██████╔╝██████╔╝██║██╔██╗██║██║░░██╗░")
+print ("██║░░╚██╗██║░░░██║░╚═══██╗██╔═══╝░██╔══██╗██║██║╚████║██║░░╚██╗")
+print ("╚██████╔╝╚██████╔╝██████╔╝██║░░░░░██║░░██║██║██║░╚███║╚██████╔╝")
+print ("░╚═════╝░░╚═════╝░╚═════╝░╚═╝░░░░░╚═╝░░╚═╝╚═╝╚═╝░░╚══╝░╚═════╝░")
 
-def main():
-    token = input("Enter your Discord Bot Token: ").strip()
-    message = input("Enter the message you want to send: ").strip()
-    channel_ids_input = input("Enter Discord Channel IDs (comma-separated): ").strip()
+time.sleep(1)
 
-    # Parse channel IDs into integers
-    try:
-        channel_ids = [int(cid.strip()) for cid in channel_ids_input.split(",") if cid.strip()]
-    except ValueError:
-        print("Error: Channel IDs must be integers.")
-        return
+# Input manual
+token = input("Masukkan Token Bot Discord: ").strip()
+channel_ids_input = input("Masukkan ID Saluran Discord (pisahkan dengan koma): ").strip()
+waktu_kirim = 86400  # 24 jam dalam detik
 
-    intents = discord.Intents.default()
-    intents.message_content = True  # Not strictly needed here but good practice
+# Mengubah ID saluran menjadi integer
+channel_ids = [int(cid.strip()) for cid in channel_ids_input.split(",")]
 
-    bot = AutoMessageBot(message, channel_ids, intents=intents)
-    bot.run(token)
+# Membaca pesan dari file
+with open("pesan.txt", "r") as f:
+    words = f.readlines()
 
-if __name__ == "__main__":
-    main()
+os.system('cls' if os.name == 'nt' else 'clear')
+
+while True:
+    for channel_id in channel_ids:
+        payload = {
+            'content': random.choice(words).strip()
+        }
+
+        headers = {
+            'Authorization': token
+        }
+
+        # Mengirim pesan
+        r = requests.post(f"https://discord.com/api/v9/channels/{channel_id}/messages", data=payload, headers=headers)
+        if r.status_code == 200:
+            print(Fore.WHITE + "Sent message: ")
+            print(Fore.YELLOW + payload['content'])
+        else:
+            print(Fore.RED + f'Gagal mengirim pesan ke channel ID {channel_id}: {r.status_code}')
+
+    print(f"Menunggu selama {waktu_kirim} detik sebelum mengirim pesan lagi...")
+    time.sleep(waktu_kirim)  # Tunggu selama 24 jam
